@@ -1,3 +1,3 @@
-module github.com/yourname/TBankBot
+module tbankbot
 
 go 1.25.4
