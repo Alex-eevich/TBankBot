@@ -71,9 +71,42 @@ func (c *Client) Candles(
 			Volume: c.Volume,
 		})
 	}
-	for i, _ := range result {
-		fmt.Println(result[i])
-	}
+
+	/*for i, _ := range result {
+		Open = append(Open, )
+	}*/
 
 	return result, nil
+}
+
+func OpensOfResponse(result []models.Candle) []float64 {
+	Opens := []float64{}
+	for _, c := range result {
+		Opens = append(Opens, c.Open)
+	}
+	return Opens
+}
+
+func HighsOfResponse(result []models.Candle) []float64 {
+	Highs := []float64{}
+	for _, c := range result {
+		Highs = append(Highs, c.High)
+	}
+	return Highs
+}
+
+func LowsOfResponse(result []models.Candle) []float64 {
+	Lows := []float64{}
+	for _, c := range result {
+		Lows = append(Lows, c.Low)
+	}
+	return Lows
+}
+
+func ClosesOfResponse(result []models.Candle) []float64 {
+	Closes := []float64{}
+	for _, c := range result {
+		Closes = append(Closes, c.Close)
+	}
+	return Closes
 }
