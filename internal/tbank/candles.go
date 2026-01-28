@@ -79,34 +79,22 @@ func (c *Client) Candles(
 	return result, nil
 }
 
-func OpensOfResponse(result []models.Candle) []float64 {
-	Opens := []float64{}
-	for _, c := range result {
-		Opens = append(Opens, c.Open)
+func NewMarketData(candles []models.Candle) models.MarketData {
+	md := models.MarketData{
+		Time:   make([]time.Time, 0, len(candles)),
+		Opens:  make([]float64, 0, len(candles)),
+		Highs:  make([]float64, 0, len(candles)),
+		Lows:   make([]float64, 0, len(candles)),
+		Closes: make([]float64, 0, len(candles)),
 	}
-	return Opens
-}
 
-func HighsOfResponse(result []models.Candle) []float64 {
-	Highs := []float64{}
-	for _, c := range result {
-		Highs = append(Highs, c.High)
+	for _, c := range candles {
+		md.Time = append(md.Time, c.Time)
+		md.Opens = append(md.Opens, c.Open)
+		md.Highs = append(md.Highs, c.High)
+		md.Lows = append(md.Lows, c.Low)
+		md.Closes = append(md.Closes, c.Close)
 	}
-	return Highs
-}
 
-func LowsOfResponse(result []models.Candle) []float64 {
-	Lows := []float64{}
-	for _, c := range result {
-		Lows = append(Lows, c.Low)
-	}
-	return Lows
-}
-
-func ClosesOfResponse(result []models.Candle) []float64 {
-	Closes := []float64{}
-	for _, c := range result {
-		Closes = append(Closes, c.Close)
-	}
-	return Closes
+	return md
 }

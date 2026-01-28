@@ -21,6 +21,14 @@ type Candle struct {
 	Volume string
 }
 
+type MarketData struct {
+	Time   []time.Time
+	Opens  []float64
+	Highs  []float64
+	Lows   []float64
+	Closes []float64
+}
+
 type GetCandlesRequest struct {
 	Figi     string `json:"figi"`
 	From     string `json:"from"`
