@@ -71,11 +71,6 @@ func (c *Client) Candles(
 			Volume: c.Volume,
 		})
 	}
-
-	/*for i, _ := range result {
-		Open = append(Open, )
-	}*/
-
 	return result, nil
 }
 
