@@ -9,5 +9,9 @@ const (
 )
 
 type TrandFilter interface {
-	Direction() TrendDirection
+	Direct() TrendDirection
+}
+
+func (t *EMATrend) Direction() TrendDirection {
+	return t.DirectionValue
 }

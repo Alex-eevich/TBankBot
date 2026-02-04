@@ -2,6 +2,7 @@ package Graph
 
 import (
 	"image/color"
+	"math"
 	"tbankbot/internal/indicators"
 	"tbankbot/internal/models"
 	"tbankbot/internal/tbank"
@@ -54,6 +55,9 @@ func PrintGraph(candles []models.Candle) models.MarketData {
 		if ema20[i] == 0 {
 			continue
 		}
+		if math.IsNaN(ema20[i]) {
+			continue
+		}
 
 		emaPoints20 = append(emaPoints20, plotter.XY{
 			X: float64(i),
@@ -64,10 +68,13 @@ func PrintGraph(candles []models.Candle) models.MarketData {
 		if ema50[i] == 0 {
 			continue
 		}
+		if math.IsNaN(ema50[i]) {
+			continue
+		}
 
 		emaPoints50 = append(emaPoints50, plotter.XY{
 			X: float64(i),
-			Y: ema20[i],
+			Y: ema50[i],
 		})
 	}
 
@@ -85,7 +92,7 @@ func PrintGraph(candles []models.Candle) models.MarketData {
 	grid := plotter.NewGrid()
 	graph.Add(grid /*openLine,*/, closeLine, highsPoint, lowsPoint, ema20line, ema50line)
 
-	graph.Save(30*vg.Inch, 15*vg.Inch, "PrintGraph.png")
+	graph.Save(100*vg.Inch, 45*vg.Inch, "PrintGraph.png")
 
 	return MarketData
 }

@@ -1,5 +1,7 @@
 package indicators
 
+import "math"
+
 func EMA(values []float64, period int) []float64 {
 	if len(values) < period {
 		return nil
@@ -7,6 +9,11 @@ func EMA(values []float64, period int) []float64 {
 
 	k := 2.0 / float64(period+1)
 	ema := make([]float64, len(values))
+
+	// до начала EMA — NaN
+	for i := 0; i < period-1; i++ {
+		ema[i] = math.NaN()
+	}
 
 	// старт с SMA
 	var sum float64

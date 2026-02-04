@@ -1,36 +1,53 @@
 package strategy
 
-type GridOrder struct {
-	Price float64
-	Side  string // BUY / SELL
+import "tbankbot/internal/models"
+
+type GridConfig struct {
+	Levels int
+	Step   float64
+	Volume float64
 }
 
-type Grid struct {
-	Level int
-	Step  float64
-}
-
-func (g *Grid) build(
+func BuildGrid(
 	price float64,
-	dir TrendDirection,
-) []GridOrder {
+	direction TrendDirection,
+	cfg GridConfig,
+) []models.Order {
 
-	orders := []GridOrder{}
+	var orders []models.Order
 
-	for i := 1; i <= g.Level; i++ {
-		switch dir {
+	for i := 1; i <= cfg.Levels; i++ {
+		offset := float64(i) * cfg.Step
+
+		switch direction {
 
 		case LongOnly:
-			orders = append(orders, GridOrder{
-				Price: price - float64(i)*g.Step,
-				Side:  "BUY",
-			})
+			orders = append(orders,
+				models.Order{
+					Price:  price - offset,
+					Volume: cfg.Volume,
+					Side:   models.Buy,
+				},
+				models.Order{
+					Price:  price + offset,
+					Volume: cfg.Volume,
+					Side:   models.Sell,
+				},
+			)
 
 		case ShortOnly:
-			orders = append(orders, GridOrder{
-				Price: price + float64(i)*g.Step,
-				Side:  "SELL",
-			})
+			orders = append(orders,
+				models.Order{
+					Price:  price + offset,
+					Volume: cfg.Volume,
+					Side:   models.Sell,
+				},
+				models.Order{
+					Price:  price - offset,
+					Volume: cfg.Volume,
+					Side:   models.Buy,
+				},
+			)
 		}
 	}
 
