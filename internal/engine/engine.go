@@ -2,109 +2,85 @@ package engine
 
 import (
 	"log"
-
+	"tbankbot/internal/broker"
 	"tbankbot/internal/indicators"
-	"tbankbot/internal/risk"
-	"tbankbot/internal/sim"
 	"tbankbot/internal/strategy"
+	"tbankbot/internal/tbank"
+	"time"
 )
 
 type Engine struct {
-	Risk *risk.RiskManager
+	Broker   broker.Broker
+	Client   *tbank.Client
+	Strategy strategy.Strategy
+	Figi     string
 }
 
-func (e *Engine) Run(
-	highs, lows, closes []float64,
-) {
-	// === индикаторы ===
-	atr := indicators.ATR(highs, lows, closes, 14)
-	emaFast := indicators.EMA(closes, 20)
-	emaSlow := indicators.EMA(closes, 50)
-	adx := indicators.ADX(highs, lows, closes, 14)
+func (e *Engine) Run() {
 
-	// === портфель (paper trading) ===
-	portfolio := &sim.Portfolio{
-		Cash:      100_000, // стартовый капитал
-		MaxEquity: 100_000,
-	}
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
 
-	initial := portfolio.Cash
+	for {
 
-	for i := 50; i < len(closes); i++ {
+		<-ticker.C
+		log.Println("New cycle")
 
-		// --- риск-менеджер ---
-		if !e.Risk.Allowed() {
-			log.Println("Trading stopped by risk manager")
-			return
-		}
-
-		// --- определение тренда ---
-		trend := strategy.NewEMATrend(
-			emaFast[:i+1],
-			emaSlow[:i+1],
-			adx[:i+1],
-			closes[:i+1],
+		// 1. получаем последние свечи
+		from := time.Now().Add(-120 * time.Minute)
+		to := time.Now()
+		candles, err := e.Client.Candles(
+			e.Figi,
+			from,
+			to,
+			tbank.Interval1Min,
 		)
-
-		// --- если нет тренда — просто обновляем equity ---
-		if trend.Direction() == strategy.NoTrade {
-			sim.UpdateMetrics(portfolio, closes[i])
-
-			log.Printf(
-				"[%d] NO TRADE | EMA20=%.2f EMA50=%.2f ADX=%.2f Equity=%.2f",
-				i,
-				emaFast[i],
-				emaSlow[i],
-				adx[i],
-				portfolio.Equity,
-			)
+		if err != nil {
+			log.Println("Error fetching candles", err)
+			continue
+		}
+		if len(candles) < 60 {
+			log.Println("Not enough candles")
 			continue
 		}
 
-		// --- шаг сетки ---
-		step := atr[i] * 0.5
+		md := tbank.NewMarketData(candles)
+		closes := md.Closes
+		lows := md.Lows
+		highs := md.Highs
 
-		// --- строим grid ---
-		grid := strategy.BuildGrid(
-			closes[i],
-			trend.Direction(),
-			strategy.GridConfig{
-				Levels: 5,
-				Step:   step,
-				Volume: 1,
-			},
-		)
+		// 2. считаем EMA
+		ema20 := indicators.EMA(closes, 20)
+		ema50 := indicators.EMA(closes, 50)
+		atr := indicators.ATR(highs, lows, closes, 14)
+		adx := indicators.ADX(highs, lows, closes, 14)
 
-		// --- исполняем grid ---
-		for _, order := range grid {
-			sim.ExecuteOrder(portfolio, &order)
-		}
+		// 3. если сигнал → отправляем market order
+		balance, _ := e.Broker.GetBalance()
+		position, _ := e.Broker.GetPosition(e.Figi)
 
-		// --- обновляем метрики ---
-		sim.UpdateMetrics(portfolio, closes[i])
+		log.Printf("Balance: %.2f Position: %.2f", balance, position)
 
-		log.Printf(
-			"[%d] Trend=%v Price=%.2f Orders=%d Cash=%.2f Pos=%.2f Equity=%.2f",
-			i,
-			trend.Direction(),
-			closes[i],
-			len(grid),
-			portfolio.Cash,
-			portfolio.PositionQty,
-			portfolio.Equity,
-		)
+		signal := e.Strategy.Evaluate(closes, position, ema20, ema50, atr, adx)
+		e.executeSignal(signal)
+
+		log.Println("Tick...")
 	}
+}
 
-	// === финальный отчёт ===
-	log.Println("===== SIMULATION FINISHED =====")
-	log.Printf("Final Cash: %.2f", portfolio.Cash)
-	log.Printf("Final Position: %.4f", portfolio.PositionQty)
-	log.Printf("Final Equity: %.2f", portfolio.Equity)
-	log.Printf("Max Drawdown: %.2f%%", portfolio.MaxDrawdown*100)
+func (e *Engine) executeSignal(signal strategy.Signal) {
 
-	final := portfolio.Equity
+	switch signal {
 
-	growth := (final - initial) / initial * 100
+	case strategy.Enterlong:
+		log.Println("ENTER LONG")
+		e.Broker.PlaceMarketOrder(e.Figi, 1, broker.Buy)
 
-	log.Printf("Return: %.2f%%", growth)
+	case strategy.Exitlong:
+		log.Println("EXIT LONG")
+		e.Broker.PlaceMarketOrder(e.Figi, 1, broker.Sell)
+
+	case strategy.Hold:
+		// ничего
+	}
 }

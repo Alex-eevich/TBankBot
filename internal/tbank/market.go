@@ -29,7 +29,7 @@ func (c *Client) Shares() ([]Instrument, error) {
 	return resp.Instruments, err
 }
 
-func moneyToFloat(units string, nano int32) float64 {
+func MoneyToFloat(units string, nano int32) float64 {
 	u, err := strconv.ParseInt(units, 10, 64)
 	if err != nil {
 		return 0

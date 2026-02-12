@@ -1,12 +1,9 @@
 package main
 
 import (
-	"tbankbot/internal/Graph"
+	"log"
 	"tbankbot/internal/config"
-	"tbankbot/internal/engine"
-	"tbankbot/internal/risk"
 	"tbankbot/internal/tbank"
-	"time"
 )
 
 func main() {
@@ -19,17 +16,31 @@ func main() {
 
 	client := tbank.NewClient(cfg.Token, cfg.BaseURL)
 
+	/*accountID, err := client.OpenSandboxAccount()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("New sandbox account:", accountID)*/
+
+	accountID, err := client.GetSandboxAccounts()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Sandbox accounts:", accountID[0])
+
+	/*err = client.SandboxPayIn(accountID[0], 100000)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Sandbox funded")*/
+
 	/*result, _ := client.Candles("BBG004730N88",
-	time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC),
-	time.Date(2024, 12, 31, 23, 59, 59, 0, time.UTC),
-	tbank.IntervalDay)*/
+	time.Date(2026, 1, 31, 10, 0, 0, 0, time.UTC),
+	time.Date(2026, 1, 31, 12, 59, 59, 0, time.UTC),
+	tbank.Interval5Sec)*/
 
-	result, _ := client.Candles("BBG004730N88",
-		time.Date(2026, 1, 31, 10, 0, 0, 0, time.UTC),
-		time.Date(2026, 1, 31, 12, 59, 59, 0, time.UTC),
-		tbank.Interval5Sec)
-
-	MarketData := tbank.NewMarketData(result)
+	/*MarketData := tbank.NewMarketData(result)
 	closes := make([]float64, len(MarketData.Closes))
 	highs := make([]float64, len(MarketData.Highs))
 	lows := make([]float64, len(MarketData.Lows))
@@ -43,11 +54,26 @@ func main() {
 		lows[i] = MarketData.Lows[i]
 	}
 
-	engine := &engine.Engine{
+	engine := &engine.BacktestEngine{
 		Risk: risk.NewRiskManager(100_000, 0.06),
+	}*/
+
+	/*accountID := "sandbox-account-id"
+
+	strat := &strategy.GridTrendStrategy{
+		FastEMA: 20,
+		SlowEMA: 50,
+	}
+	broker := broker.NewTBankBroker(client, accountID)
+
+	engine := &engine.Engine{
+		Broker:   broker,
+		Client:   client,
+		Strategy: strat,
+		Figi:     "BBG004730N88",
 	}
 
-	engine.Run(highs, lows, closes)
+	engine.Run()
 
-	Graph.PrintGraph(result)
+	Graph.PrintGraph(result)*/
 }
