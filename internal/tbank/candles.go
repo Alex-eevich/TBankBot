@@ -20,6 +20,7 @@ func (c *Client) Candles(
 		From: from.UTC().Format(time.RFC3339),
 		To:   to.UTC().Format(time.RFC3339),
 		Interval: map[CandleInterval]string{
+			Interval5Sec: "CANDLE_INTERVAL_5_SEC",
 			Interval1Min: "CANDLE_INTERVAL_1_MIN",
 			Interval5Min: "CANDLE_INTERVAL_5_MIN",
 			IntervalDay:  "CANDLE_INTERVAL_DAY",

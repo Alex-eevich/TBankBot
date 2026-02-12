@@ -28,6 +28,8 @@ func (e *Engine) Run(
 		MaxEquity: 100_000,
 	}
 
+	initial := portfolio.Cash
+
 	for i := 50; i < len(closes); i++ {
 
 		// --- риск-менеджер ---
@@ -38,8 +40,9 @@ func (e *Engine) Run(
 
 		// --- определение тренда ---
 		trend := strategy.NewEMATrend(
-			highs[:i+1],
-			lows[:i+1],
+			emaFast[:i+1],
+			emaSlow[:i+1],
+			adx[:i+1],
 			closes[:i+1],
 		)
 
@@ -98,4 +101,10 @@ func (e *Engine) Run(
 	log.Printf("Final Position: %.4f", portfolio.PositionQty)
 	log.Printf("Final Equity: %.2f", portfolio.Equity)
 	log.Printf("Max Drawdown: %.2f%%", portfolio.MaxDrawdown*100)
+
+	final := portfolio.Equity
+
+	growth := (final - initial) / initial * 100
+
+	log.Printf("Return: %.2f%%", growth)
 }

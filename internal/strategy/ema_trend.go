@@ -2,17 +2,16 @@ package strategy
 
 import (
 	"math"
-	"tbankbot/internal/indicators"
 )
 
 type EMATrend struct {
 	DirectionValue TrendDirection
 }
 
-func NewEMATrend(highs, lows, closes []float64) *EMATrend {
-	emaFast := indicators.EMA(closes, 20)
+func NewEMATrend(emaFast, emaSlow, adx, closes []float64) *EMATrend {
+	/*emaFast := indicators.EMA(closes, 20)
 	emaSlow := indicators.EMA(closes, 50)
-	adx := indicators.ADX(highs, lows, closes, 14)
+	adx := indicators.ADX(highs, lows, closes, 14)*/
 
 	if emaFast == nil || emaSlow == nil || adx == nil {
 		return &EMATrend{NoTrade}

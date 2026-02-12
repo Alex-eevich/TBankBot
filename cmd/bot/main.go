@@ -25,9 +25,9 @@ func main() {
 	tbank.IntervalDay)*/
 
 	result, _ := client.Candles("BBG004730N88",
-		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC),
-		tbank.IntervalDay)
+		time.Date(2026, 1, 31, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, 1, 31, 12, 59, 59, 0, time.UTC),
+		tbank.Interval5Sec)
 
 	MarketData := tbank.NewMarketData(result)
 	closes := make([]float64, len(MarketData.Closes))
