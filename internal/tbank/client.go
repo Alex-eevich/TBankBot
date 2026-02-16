@@ -2,8 +2,10 @@ package tbank
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"tbankbot/internal/models"
 	"time"
@@ -27,6 +29,24 @@ type SandboxAccountInfo struct {
 		Units string `json:"units"`
 		Nano  int32  `json:"nano"`
 	} `json:"balance"`
+}
+
+type MoneyValue struct {
+	Currency string `json:"currency"`
+	Units    string `json:"units"`
+	Nano     int32  `json:"nano"`
+}
+
+// SandboxPortfolioResponse — часть ответа с портфелем
+type SandboxPortfolioResponse struct {
+	TotalAmountCurrencies *MoneyValue `json:"totalAmountCurrencies"`
+	TotalAmountShares     *MoneyValue `json:"totalAmountShares"`
+	TotalAmountBonds      *MoneyValue `json:"totalAmountBonds"`
+}
+
+type PortfolioResponse struct {
+	TotalAmountCurrencies MoneyValue `json:"totalAmountCurrencies"`
+	TotalAmountPortfolio  MoneyValue `json:"totalAmountPortfolio"`
 }
 
 func NewClient(token, baseURL string) *Client {
@@ -236,6 +256,7 @@ func (c *Client) OpenSandboxAccount() (string, error) {
 	return resp.AccountId, nil
 }
 
+/*
 // Пополнение аккаунта
 func (c *Client) SandboxPayIn(accountID string, amount int64) error {
 
@@ -256,6 +277,100 @@ func (c *Client) SandboxPayIn(accountID string, amount int64) error {
 		body,
 		nil,
 	)
-}
+}*/
 
 // Инфа о счете
+func (c *Client) GetSandboxPortfolio(accountID, token, baseURL string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	url := baseURL + "/tinkoff.public.invest.api.contract.v1.SandboxService/GetSandboxPortfolio"
+
+	// Тело запроса
+	body := map[string]string{
+		"accountId": accountID,
+		"currency":  "RUB",
+	}
+	jsonBody, _ := json.Marshal(body)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Выполняем запрос
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status %s", res.Status)
+	}
+
+	bodyBytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+	//fmt.Println("RAW:", string(bodyBytes))
+	var parsed PortfolioResponse
+	if err := json.Unmarshal(bodyBytes, &parsed); err != nil {
+		return err
+	}
+
+	fmt.Printf("Доступные средства: %s %s\n",
+		parsed.TotalAmountCurrencies.Units,
+		parsed.TotalAmountCurrencies.Currency,
+	)
+
+	return nil
+}
+
+// Пополнение счета
+func (c *Client) SandboxPayIn(accountID, token, baseURL, amount string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	url := baseURL + "/tinkoff.public.invest.api.contract.v1.SandboxService/SandboxPayIn"
+
+	requestBody := map[string]interface{}{
+		"accountId": accountID,
+		"amount": MoneyValue{
+			Currency: "RUB",
+			Units:    amount,
+			Nano:     0,
+		},
+	}
+
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status: %s", res.Status)
+	}
+
+	fmt.Println("Счёт успешно пополнен 💰")
+	return nil
+}

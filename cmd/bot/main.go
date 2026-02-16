@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"tbankbot/internal/config"
 	"tbankbot/internal/tbank"
@@ -26,14 +27,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	log.Println("Sandbox accounts:", accountID[0])
 
-	/*err = client.SandboxPayIn(accountID[0], 100000)
-	if err != nil {
-		log.Fatal(err)
+	if err := client.GetSandboxPortfolio(accountID[0], cfg.Token, cfg.BaseURL); err != nil {
+		fmt.Println("Ошибка:", err)
 	}
-	log.Println("Sandbox funded")*/
+	/*errorPayIn := client.SandboxPayIn(accountID[0], cfg.Token, cfg.BaseURL, "100000")
+	if errorPayIn != nil {
+		log.Fatal(errorPayIn)
+	}*/
 
 	/*result, _ := client.Candles("BBG004730N88",
 	time.Date(2026, 1, 31, 10, 0, 0, 0, time.UTC),
