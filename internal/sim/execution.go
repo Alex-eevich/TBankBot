@@ -1,22 +1,23 @@
 package sim
 
-import "tbankbot/internal/models"
+import (
+	"log"
+	"tbankbot/internal/models"
+)
 
-func ExecuteOrder(p *Portfolio, o *models.Order) {
-	cost := o.Price * o.Volume
-
+func ExecuteOrder(o *models.Order, accountID, token, baseURL string) {
 	switch o.Side {
 
 	case models.Buy:
-		if p.Cash >= cost {
-			p.Cash -= cost
-			p.PositionQty += o.Volume
+		postErr := models.PostOrder(accountID, token, baseURL, "BBG004730N88", models.Buy)
+		if postErr != nil {
+			log.Println(postErr)
 		}
 
 	case models.Sell:
-		if p.PositionQty >= o.Volume {
-			p.Cash += cost
-			p.PositionQty -= o.Volume
+		postErr := models.PostOrder(accountID, token, baseURL, "BBG004730N88", models.Buy)
+		if postErr != nil {
+			log.Println(postErr)
 		}
 	}
 }

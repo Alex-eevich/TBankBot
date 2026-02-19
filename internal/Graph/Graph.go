@@ -92,7 +92,7 @@ func PrintGraph(candles []models.Candle) models.MarketData {
 	grid := plotter.NewGrid()
 	graph.Add(grid /*openLine,*/, closeLine, highsPoint, lowsPoint, ema20line, ema50line)
 
-	graph.Save(100*vg.Inch, 45*vg.Inch, "PrintGraph.png")
+	graph.Save(20*vg.Inch, 9*vg.Inch, "PrintGraph.png")
 
 	return MarketData
 }

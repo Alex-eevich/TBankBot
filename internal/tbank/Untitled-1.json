@@ -1,0 +1,108 @@
+RAW: {
+  "totalAmountShares": {
+    "currency": "rub",
+    "units": "314",
+    "nano": 110000000
+  },
+  "totalAmountBonds": {
+    "currency": "rub",
+    "units": "0",
+    "nano": 0
+  },
+  "totalAmountEtf": {
+    "currency": "rub",
+    "units": "0",
+    "nano": 0
+  },
+  "totalAmountCurrencies": {
+    "currency": "rub",
+    "units": "1499686",
+    "nano": 183170000
+  },
+  "totalAmountFutures": {
+    "currency": "rub",
+    "units": "0",
+    "nano": 0
+  },
+  "expectedYield": {
+    "units": "0",
+    "nano": 0
+  },
+  "positions": [{
+    "figi": "RUB000UTSTOM",
+    "instrumentType": "currency",
+    "quantity": {
+      "units": "1499686",
+      "nano": 183170000
+  },
+  "averagePositionPricePt": {
+    "units": "0",
+    "nano": 0
+  },
+  "quantityLots": {
+    "units": "1499686",
+    "nano": 183170000
+  },
+  "blocked": false,
+  "positionUid": "33e24a92-aab0-409c-88b8-f2d57415b920",
+  "instrumentUid": "a92e2e25-a698-45cc-a781-167cf465257c",
+  "ticker": "RUB000UTSTOM",
+  "classCode": "CETS"
+  }, {
+    "figi": "BBG004730N88",
+    "instrumentType": "share",
+    "quantity": {
+      "units": "1",
+      "nano": 0
+  },
+  "averagePositionPrice": {
+    "currency": "rub",
+    "units": "313",
+    "nano": 660000000
+  },
+  "averagePositionPricePt": {
+    "units": "0",
+    "nano": 0
+  },
+  "currentPrice": {
+    "currency": "rub",
+    "units": "314",
+    "nano": 110000000
+  },
+  "averagePositionPriceFifo": {
+    "currency": "rub",
+    "units": "313",
+    "nano": 660000000
+  },
+  "quantityLots": {
+    "units": "1",
+    "nano": 0
+  },
+  "blocked": false,
+  "blockedLots": {
+    "units": "0",
+    "nano": 0
+  },
+  "positionUid": "41eb2102-5333-4713-bf15-72b204c4bf7b",
+  "instrumentUid": "e6123145-9665-43e0-8413-cd61b8aa9b13",
+  "ticker": "SBER",
+  "classCode": "TQBR"
+  }],
+  "accountId": "825a66ea-1b37-40f6-851b-25b82d63cb08",
+  "totalAmountOptions": {
+    "currency": "rub",
+    "units": "0",
+    "nano": 0
+  },
+  "totalAmountSp": {
+    "currency": "rub",
+    "units": "0",
+    "nano": 0
+  },
+  "totalAmountPortfolio": {
+    "currency": "rub",
+    "units": "1500000",
+    "nano": 293170000
+  },
+  "virtualPositions": []
+}

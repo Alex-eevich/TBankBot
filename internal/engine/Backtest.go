@@ -1,5 +1,6 @@
 package engine
 
+/*
 import (
 	"log"
 
@@ -107,4 +108,4 @@ func (e *BacktestEngine) Run(
 	growth := (final - initial) / initial * 100
 
 	log.Printf("Return: %.2f%%", growth)
-}
+}*/

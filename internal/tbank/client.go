@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"tbankbot/internal/models"
 	"time"
@@ -47,6 +48,7 @@ type SandboxPortfolioResponse struct {
 type PortfolioResponse struct {
 	TotalAmountCurrencies MoneyValue `json:"totalAmountCurrencies"`
 	TotalAmountPortfolio  MoneyValue `json:"totalAmountPortfolio"`
+	TotalAmountShares     MoneyValue `json:"totalAmountShares"`
 }
 
 func NewClient(token, baseURL string) *Client {
@@ -232,6 +234,7 @@ func (c *Client) GetPortfolio(accountID string, out any) error {
 		"tinkoff.public.invest.api.contract.v1.OperationsService/GetPortfolio",
 		map[string]string{
 			"accountId": accountID,
+			"currency":  "RUB",
 		},
 		out,
 	)
@@ -255,29 +258,6 @@ func (c *Client) OpenSandboxAccount() (string, error) {
 
 	return resp.AccountId, nil
 }
-
-/*
-// Пополнение аккаунта
-func (c *Client) SandboxPayIn(accountID string, amount int64) error {
-
-	body := map[string]interface{}{
-		"accountId": accountID,
-		"amount": map[string]interface{}{
-			"currency": "RUB",
-			"units":    amount,
-			"nano":     0,
-		},
-	}
-	fmt.Println("Request URL:", fmt.Sprintf("%s/%s", c.baseURL, "tinkoff.public.invest.api.contract.v1.SandboxService/SandboxPayIn"))
-	fmt.Println("Request body:", body)
-
-	return c.do(
-		"POST",
-		"tinkoff.public.invest.api.contract.v1.SandboxService/SandboxPayIn",
-		body,
-		nil,
-	)
-}*/
 
 // Инфа о счете
 func (c *Client) GetSandboxPortfolio(accountID, token, baseURL string) error {
@@ -323,9 +303,30 @@ func (c *Client) GetSandboxPortfolio(accountID, token, baseURL string) error {
 		return err
 	}
 
-	fmt.Printf("Доступные средства: %s %s\n",
-		parsed.TotalAmountCurrencies.Units,
-		parsed.TotalAmountCurrencies.Currency,
+	Units := parsed.TotalAmountCurrencies.Units
+	Nano := parsed.TotalAmountCurrencies.Nano / 1000000
+	Currency := parsed.TotalAmountCurrencies.Currency
+
+	InCycleUnits := parsed.TotalAmountShares.Units
+	InCycleNano := parsed.TotalAmountShares.Nano / 1000000
+
+	SumPortfolioUnits := parsed.TotalAmountPortfolio.Units
+	SumPortfolioNano := parsed.TotalAmountPortfolio.Nano / 1000000
+
+	log.Printf("Доступные средства: %s.%d %s \n",
+		Units,
+		Nano,
+		Currency,
+	)
+	log.Printf("Средств в акицях: %s.%d %s \n",
+		InCycleUnits,
+		InCycleNano,
+		Currency,
+	)
+	log.Printf("Сумма портфеля: %s.%d %s \n",
+		SumPortfolioUnits,
+		SumPortfolioNano,
+		Currency,
 	)
 
 	return nil

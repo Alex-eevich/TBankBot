@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"tbankbot/internal/broker"
 	"tbankbot/internal/config"
+	"tbankbot/internal/engine"
+	"tbankbot/internal/strategy"
 	"tbankbot/internal/tbank"
 )
 
@@ -17,25 +19,19 @@ func main() {
 
 	client := tbank.NewClient(cfg.Token, cfg.BaseURL)
 
-	/*accountID, err := client.OpenSandboxAccount()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("New sandbox account:", accountID)*/
-
 	accountID, err := client.GetSandboxAccounts()
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("Sandbox accounts:", accountID[0])
-
 	if err := client.GetSandboxPortfolio(accountID[0], cfg.Token, cfg.BaseURL); err != nil {
-		fmt.Println("Ошибка:", err)
+		log.Println("Ошибка:", err)
 	}
-	/*errorPayIn := client.SandboxPayIn(accountID[0], cfg.Token, cfg.BaseURL, "100000")
-	if errorPayIn != nil {
-		log.Fatal(errorPayIn)
-	}*/
+
+	/*postErr := models.PostOrder(accountID[0], cfg.Token, cfg.BaseURL, "BBG004730N88", models.Buy)
+	if postErr != nil {
+		log.Println(postErr)
+	}
 
 	/*result, _ := client.Candles("BBG004730N88",
 	time.Date(2026, 1, 31, 10, 0, 0, 0, time.UTC),
@@ -54,19 +50,19 @@ func main() {
 	}
 	for i, _ := range MarketData.Lows {
 		lows[i] = MarketData.Lows[i]
-	}
+	}}
 
 	engine := &engine.BacktestEngine{
 		Risk: risk.NewRiskManager(100_000, 0.06),
-	}*/
+	*/
 
 	/*accountID := "sandbox-account-id"
-
+	 */
 	strat := &strategy.GridTrendStrategy{
 		FastEMA: 20,
 		SlowEMA: 50,
 	}
-	broker := broker.NewTBankBroker(client, accountID)
+	broker := broker.NewTBankBroker(client, accountID[0])
 
 	engine := &engine.Engine{
 		Broker:   broker,
@@ -75,7 +71,7 @@ func main() {
 		Figi:     "BBG004730N88",
 	}
 
-	engine.Run()
+	engine.Run(accountID[0], cfg.Token, cfg.BaseURL, client)
 
-	Graph.PrintGraph(result)*/
+	//Graph.PrintGraph(result)*/
 }

@@ -2,8 +2,11 @@ package engine
 
 import (
 	"log"
+	"strconv"
+	"tbankbot/internal/Graph"
 	"tbankbot/internal/broker"
 	"tbankbot/internal/indicators"
+	"tbankbot/internal/sim"
 	"tbankbot/internal/strategy"
 	"tbankbot/internal/tbank"
 	"time"
@@ -16,18 +19,18 @@ type Engine struct {
 	Figi     string
 }
 
-func (e *Engine) Run() {
+func (e *Engine) Run(accountID, token, baseURL string, client *tbank.Client) {
 
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
+	cycle := 0
 
 	for {
-
-		<-ticker.C
-		log.Println("New cycle")
+		log.Println("Cycle " + strconv.Itoa(cycle))
+		cycle += 1
 
 		// 1. получаем последние свечи
-		from := time.Now().Add(-120 * time.Minute)
+		from := time.Now().Add(-180 * time.Minute)
 		to := time.Now()
 		candles, err := e.Client.Candles(
 			e.Figi,
@@ -56,15 +59,39 @@ func (e *Engine) Run() {
 		adx := indicators.ADX(highs, lows, closes, 14)
 
 		// 3. если сигнал → отправляем market order
-		balance, _ := e.Broker.GetBalance()
-		position, _ := e.Broker.GetPosition(e.Figi)
 
-		log.Printf("Balance: %.2f Position: %.2f", balance, position)
+		i := len(closes) - 1
+		trend := strategy.NewEMATrend(
+			ema20,
+			ema50,
+			adx,
+			closes,
+		)
 
-		signal := e.Strategy.Evaluate(closes, position, ema20, ema50, atr, adx)
-		e.executeSignal(signal)
+		if trend.Direction() == strategy.NoTrade {
+			return
+		}
 
-		log.Println("Tick...")
+		step := atr[i] * 0.5
+
+		grid := strategy.BuildGrid(
+			closes[i],
+			trend.Direction(),
+			strategy.GridConfig{
+				Levels: 5,
+				Step:   step,
+				Volume: 1,
+			},
+		)
+
+		for _, order := range grid {
+			sim.ExecuteOrder(&order, accountID, token, baseURL)
+		}
+		if err := client.GetSandboxPortfolio(accountID, token, baseURL); err != nil {
+			log.Println("Ошибка:", err)
+		}
+		Graph.PrintGraph(candles)
+		<-ticker.C
 	}
 }
 
